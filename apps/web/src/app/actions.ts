@@ -1,14 +1,37 @@
 "use server";
 
-import { auth } from "@deepsec-me/auth";
-import { db } from "@deepsec-me/db";
-import { reviewReport, reviewRequest } from "@deepsec-me/db/schema";
+import { auth } from "@opensec/auth";
+import { db } from "@opensec/db";
+import {
+  account,
+  repository,
+  reviewReport,
+  reviewRequestSubmission,
+  type VerificationLevel,
+} from "@opensec/db/schema";
 import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 
-import { fetchGithubRepoMetadata, parseGithubRepoUrl } from "@/lib/github";
+import { parseClocOutput } from "@/lib/cloc";
+import {
+  fetchGithubRepoMetadata,
+  fetchGithubRepoPermission,
+  parseGithubRepoUrl,
+} from "@/lib/github";
+
+const verificationPriority: Record<VerificationLevel, number> = {
+  unverified: 0,
+  contributor: 1,
+  maintainer: 2,
+};
+
+export type FormActionResult = { ok: true; redirectTo: string } | { ok: false; error: string };
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong. Please try again.";
+}
 
 async function requireUser() {
   const session = await auth.api.getSession({
@@ -20,6 +43,14 @@ async function requireUser() {
   }
 
   return session.user;
+}
+
+async function getGithubAccessToken(userId: string) {
+  const githubAccount = await db.query.account.findFirst({
+    where: and(eq(account.userId, userId), eq(account.providerId, "github")),
+  });
+
+  return githubAccount?.accessToken ?? null;
 }
 
 function getRequiredString(formData: FormData, key: string) {
@@ -42,83 +73,188 @@ function getCount(formData: FormData, key: string) {
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
-export async function createReviewRequest(formData: FormData) {
+export async function createReviewRequest(formData: FormData): Promise<FormActionResult> {
   const user = await requireUser();
-  const repo = parseGithubRepoUrl(getRequiredString(formData, "repoUrl"));
-  const description = getRequiredString(formData, "description");
-  const securityNotes = getOptionalString(formData, "securityNotes");
-  const metadata = await fetchGithubRepoMetadata(repo.owner, repo.repo);
 
-  const existing = await db.query.reviewRequest.findFirst({
-    where: eq(reviewRequest.repoUrl, repo.repoUrl),
-  });
+  try {
+    const repo = parseGithubRepoUrl(getRequiredString(formData, "repoUrl"));
+    const description = getRequiredString(formData, "description");
+    const securityNotes = getOptionalString(formData, "securityNotes");
+    const parsedCloc = parseClocOutput(getOptionalString(formData, "clocOutput"));
+    const accessToken = await getGithubAccessToken(user.id);
+    const [metadata, permission] = await Promise.all([
+      fetchGithubRepoMetadata(repo.owner, repo.repo),
+      fetchGithubRepoPermission(repo.owner, repo.repo, accessToken),
+    ]);
 
-  if (existing) {
-    redirect(`/reviews/${existing.id}`);
+    if (!metadata) {
+      return {
+        ok: false,
+        error: "Repository not found. Submit a real public GitHub repository URL.",
+      };
+    }
+
+    if (metadata.isPrivate || metadata.visibility !== "public") {
+      return { ok: false, error: "Only public GitHub repositories can request reviews." };
+    }
+
+    const existingRepository = await db.query.repository.findFirst({
+      where: eq(repository.repoUrl, repo.repoUrl),
+    });
+
+    const [repoRecord] = existingRepository
+      ? [existingRepository]
+      : await db
+          .insert(repository)
+          .values({
+            repoUrl: repo.repoUrl,
+            repoSlug: repo.slug,
+            repoOwner: repo.owner,
+            repoName: repo.repo,
+            verificationLevel: permission.verificationLevel,
+            ghDescription: metadata.ghDescription,
+            ghStars: metadata.ghStars,
+            ghForks: metadata.ghForks,
+            ghOpenIssues: metadata.ghOpenIssues,
+            ghLanguage: metadata.ghLanguage,
+            ghTopics: metadata.ghTopics,
+            ghLicense: metadata.ghLicense,
+            ghDefaultBranch: metadata.ghDefaultBranch,
+            ghPushedAt: metadata.ghPushedAt,
+            ghOwnerAvatarUrl: metadata.ghOwnerAvatarUrl,
+            ghOwnerType: metadata.ghOwnerType,
+            ghHomepage: metadata.ghHomepage,
+            ghArchived: metadata.ghArchived,
+            ghFetchedAt: metadata.ghFetchedAt,
+            locTotal: parsedCloc.locTotal,
+            locFiles: parsedCloc.locFiles,
+            locBlank: parsedCloc.locBlank,
+            locComment: parsedCloc.locComment,
+            locByLanguage: parsedCloc.locByLanguage,
+            clocOutputRaw: parsedCloc.clocOutputRaw,
+          })
+          .returning();
+
+    const [submission] = await db
+      .insert(reviewRequestSubmission)
+      .values({
+        repositoryId: repoRecord.id,
+        requesterId: user.id,
+        verificationLevel: permission.verificationLevel,
+        requesterRepoPermission: permission.permission,
+        description,
+        securityNotes,
+        locTotal: parsedCloc.locTotal,
+        locFiles: parsedCloc.locFiles,
+        locBlank: parsedCloc.locBlank,
+        locComment: parsedCloc.locComment,
+        locByLanguage: parsedCloc.locByLanguage,
+        clocOutputRaw: parsedCloc.clocOutputRaw,
+      })
+      .returning();
+
+    const shouldPromoteSubmission =
+      verificationPriority[permission.verificationLevel] >=
+      verificationPriority[repoRecord.verificationLevel];
+    const updateValues = {
+      ghDescription: metadata.ghDescription,
+      ghStars: metadata.ghStars,
+      ghForks: metadata.ghForks,
+      ghOpenIssues: metadata.ghOpenIssues,
+      ghLanguage: metadata.ghLanguage,
+      ghTopics: metadata.ghTopics,
+      ghLicense: metadata.ghLicense,
+      ghDefaultBranch: metadata.ghDefaultBranch,
+      ghPushedAt: metadata.ghPushedAt,
+      ghOwnerAvatarUrl: metadata.ghOwnerAvatarUrl,
+      ghOwnerType: metadata.ghOwnerType,
+      ghHomepage: metadata.ghHomepage,
+      ghArchived: metadata.ghArchived,
+      ghFetchedAt: metadata.ghFetchedAt,
+      ...(shouldPromoteSubmission
+        ? {
+            activeSubmissionId: submission.id,
+            verificationLevel: permission.verificationLevel,
+            verifiedBySubmissionId:
+              permission.verificationLevel === "unverified"
+                ? repoRecord.verifiedBySubmissionId
+                : submission.id,
+            verifiedByUserId:
+              permission.verificationLevel === "unverified" ? repoRecord.verifiedByUserId : user.id,
+            verifiedAt:
+              permission.verificationLevel === "unverified" ? repoRecord.verifiedAt : new Date(),
+            locTotal: parsedCloc.locTotal,
+            locFiles: parsedCloc.locFiles,
+            locBlank: parsedCloc.locBlank,
+            locComment: parsedCloc.locComment,
+            locByLanguage: parsedCloc.locByLanguage,
+            clocOutputRaw: parsedCloc.clocOutputRaw,
+          }
+        : {}),
+    };
+
+    if (Object.keys(updateValues).length > 0) {
+      await db.update(repository).set(updateValues).where(eq(repository.id, repoRecord.id));
+    }
+
+    revalidatePath("/");
+    revalidatePath("/repos");
+    revalidatePath(`/repos/${repoRecord.repoSlug}`);
+    return { ok: true, redirectTo: `/repos/${repoRecord.repoSlug}` };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error) };
   }
-
-  const [request] = await db
-    .insert(reviewRequest)
-    .values({
-      repoUrl: repo.repoUrl,
-      repoOwner: repo.owner,
-      repoName: repo.repo,
-      description,
-      securityNotes,
-      ...metadata,
-      requesterId: user.id,
-    })
-    .returning({ id: reviewRequest.id });
-
-  revalidatePath("/");
-  revalidatePath("/reviews");
-  redirect(`/reviews/${request.id}`);
 }
 
-export async function submitReviewReport(formData: FormData) {
+export async function submitReviewReport(formData: FormData): Promise<FormActionResult> {
   const user = await requireUser();
-  const requestId = getRequiredString(formData, "requestId");
-  const markdown = getRequiredString(formData, "markdown");
-  const providerValue = getRequiredString(formData, "provider");
-  const provider =
-    providerValue === "claude" || providerValue === "codex" ? providerValue : "other";
-  const modelName = getOptionalString(formData, "modelName");
-  const criticalCount = getCount(formData, "criticalCount");
-  const highCount = getCount(formData, "highCount");
-  const mediumCount = getCount(formData, "mediumCount");
-  const lowCount = getCount(formData, "lowCount");
-  const informationalCount = getCount(formData, "informationalCount");
-  const totalCount = criticalCount + highCount + mediumCount + lowCount + informationalCount;
 
-  const request = await db.query.reviewRequest.findFirst({
-    where: and(eq(reviewRequest.id, requestId), eq(reviewRequest.status, "pending")),
-  });
+  try {
+    const repositoryId = getRequiredString(formData, "repositoryId");
+    const markdown = getRequiredString(formData, "markdown");
+    const providerValue = getRequiredString(formData, "provider");
+    const provider =
+      providerValue === "claude" || providerValue === "codex" ? providerValue : "other";
+    const modelName = getOptionalString(formData, "modelName");
+    const criticalCount = getCount(formData, "criticalCount");
+    const highCount = getCount(formData, "highCount");
+    const mediumCount = getCount(formData, "mediumCount");
+    const lowCount = getCount(formData, "lowCount");
+    const informationalCount = getCount(formData, "informationalCount");
+    const totalCount = criticalCount + highCount + mediumCount + lowCount + informationalCount;
 
-  if (!request) {
-    redirect(`/reviews/${requestId}`);
+    const repoRecord = await db.query.repository.findFirst({
+      where: and(eq(repository.id, repositoryId), eq(repository.status, "pending")),
+    });
+
+    if (!repoRecord) {
+      return { ok: false, error: "This repository is no longer accepting donated reviews." };
+    }
+
+    await db.insert(reviewReport).values({
+      repositoryId,
+      donorId: user.id,
+      markdown,
+      provider,
+      modelName,
+      criticalCount,
+      highCount,
+      mediumCount,
+      lowCount,
+      informationalCount,
+      totalCount,
+    });
+
+    await db
+      .update(repository)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(eq(repository.id, repositoryId));
+
+    revalidatePath("/");
+    revalidatePath("/repos");
+    revalidatePath(`/repos/${repoRecord.repoSlug}`);
+    return { ok: true, redirectTo: `/repos/${repoRecord.repoSlug}` };
+  } catch (error) {
+    return { ok: false, error: getErrorMessage(error) };
   }
-
-  await db.insert(reviewReport).values({
-    requestId,
-    donorId: user.id,
-    markdown,
-    provider,
-    modelName,
-    criticalCount,
-    highCount,
-    mediumCount,
-    lowCount,
-    informationalCount,
-    totalCount,
-  });
-
-  await db
-    .update(reviewRequest)
-    .set({ status: "completed", completedAt: new Date() })
-    .where(eq(reviewRequest.id, requestId));
-
-  revalidatePath("/");
-  revalidatePath("/reviews");
-  revalidatePath(`/reviews/${requestId}`);
-  redirect(`/reviews/${requestId}`);
 }

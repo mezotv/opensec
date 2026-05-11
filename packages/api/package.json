@@ -1,5 +1,5 @@
 {
-  "name": "@deepsec-me/api",
+  "name": "@opensec/api",
   "type": "module",
   "exports": {
     ".": {
@@ -11,9 +11,9 @@
   },
   "scripts": {},
   "dependencies": {
-    "@deepsec-me/auth": "workspace:*",
-    "@deepsec-me/db": "workspace:*",
-    "@deepsec-me/env": "workspace:*",
+    "@opensec/auth": "workspace:*",
+    "@opensec/db": "workspace:*",
+    "@opensec/env": "workspace:*",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
@@ -23,7 +23,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@deepsec-me/config": "workspace:*",
+    "@opensec/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { submitReviewReport } from "@/app/actions";
-import { Button } from "@deepsec-me/ui/components/button";
+import { Button } from "@opensec/ui/components/button";
 import {
   Dialog,
   DialogContent,
@@ -9,32 +9,75 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@deepsec-me/ui/components/dialog";
-import { Input } from "@deepsec-me/ui/components/input";
-import { Label } from "@deepsec-me/ui/components/label";
+} from "@opensec/ui/components/dialog";
+import { Input } from "@opensec/ui/components/input";
+import { Label } from "@opensec/ui/components/label";
+import { useMutation } from "@tanstack/react-query";
+import { LoaderCircle } from "lucide-react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 type DonateReviewDialogProps = {
-  requestId: string;
+  repositoryId: string;
   repoUrl: string;
 };
 
-export function DonateReviewDialog({ requestId, repoUrl }: DonateReviewDialogProps) {
+export function DonateReviewDialog({ repositoryId, repoUrl }: DonateReviewDialogProps) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const mutation = useMutation({
+    mutationFn: submitReviewReport,
+    onSuccess: (result) => {
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      setError(null);
+      router.push(result.redirectTo as Route);
+    },
+    onError: (mutationError) => {
+      setError(mutationError instanceof Error ? mutationError.message : "Failed to submit report.");
+    },
+  });
+
   return (
     <Dialog>
       <DialogTrigger render={<Button size="lg" />}>Donate a review</DialogTrigger>
       <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Donate a review</DialogTitle>
+          <DialogTitle>Submit a review</DialogTitle>
           <DialogDescription>
-            Run DeepSec locally, then paste the final Markdown report. The full report stays
-            private.
+            Run your preferred security review workflow, then paste the final Markdown report. The
+            full report stays private.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="border bg-muted/30 p-4 font-mono text-xs">deepsec {repoUrl}</div>
+        <div className="border bg-muted/30 p-4 font-mono text-xs">Repository: {repoUrl}</div>
 
-        <form action={submitReviewReport} className="space-y-5">
-          <input type="hidden" name="requestId" value={requestId} />
+        <form
+          ref={formRef}
+          className="space-y-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setError(null);
+
+            if (!formRef.current) {
+              setError("Form is not ready. Please try again.");
+              return;
+            }
+
+            mutation.mutate(new FormData(formRef.current));
+          }}
+        >
+          <input type="hidden" name="repositoryId" value={repositoryId} />
+          {error ? (
+            <p className="border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="provider">Provider</Label>
@@ -50,11 +93,7 @@ export function DonateReviewDialog({ requestId, repoUrl }: DonateReviewDialogPro
             </div>
             <div className="space-y-2">
               <Label htmlFor="modelName">Model name</Label>
-              <Input
-                id="modelName"
-                name="modelName"
-                placeholder="Claude Opus 4.5, GPT-5.1 Codex..."
-              />
+              <Input id="modelName" name="modelName" placeholder="Opus 4.5, GPT-5.5..." />
             </div>
           </div>
 
@@ -94,7 +133,7 @@ export function DonateReviewDialog({ requestId, repoUrl }: DonateReviewDialogPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="markdown">DeepSec Markdown report</Label>
+            <Label htmlFor="markdown">Markdown report</Label>
             <textarea
               id="markdown"
               name="markdown"
@@ -103,7 +142,10 @@ export function DonateReviewDialog({ requestId, repoUrl }: DonateReviewDialogPro
             />
           </div>
 
-          <Button type="submit">Submit private report</Button>
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
+            {mutation.isPending ? "Submitting report..." : "Submit private report"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,4 @@
-import { cn } from "@deepsec-me/ui/lib/utils";
+import { cn } from "@opensec/ui/lib/utils";
 
 function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {
   return (

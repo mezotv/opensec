@@ -1,1 +1,78 @@
-@import "@deepsec-me/ui/globals.css";
+@import "@opensec/ui/globals.css";
+
+@theme inline {
+  --font-pixel: var(--font-pixel);
+  --font-pixel-line: var(--font-geist-pixel-line);
+}
+
+@keyframes opensec-scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes opensec-hero-in {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes opensec-event-ticker {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.opensec-hero {
+  --font-mono: var(--font-geist-mono);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.opensec-hero::before {
+  content: none;
+}
+
+.opensec-ascii-mask {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 100%);
+}
+
+.opensec-scanline {
+  animation: opensec-scanline 8s linear infinite;
+}
+
+.opensec-hero-copy {
+  animation: opensec-hero-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.opensec-hero-actions {
+  animation: opensec-hero-in 0.6s ease-out 0.35s both;
+}
+
+.opensec-event-ticker {
+  animation: opensec-event-ticker 70s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opensec-scanline,
+  .opensec-hero-copy,
+  .opensec-hero-actions,
+  .opensec-event-ticker {
+    animation: none;
+  }
+}

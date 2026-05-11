@@ -1,5 +1,5 @@
 {
-  "id": "7abd969c-5884-4ae8-88e9-92019afba49e",
+  "id": "891fcb28-c70c-4829-abad-d87a1cf8bf5a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -347,126 +347,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.review_report": {
-      "name": "review_report",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "request_id": {
-          "name": "request_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "donor_id": {
-          "name": "donor_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "markdown": {
-          "name": "markdown",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "provider": {
-          "name": "provider",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "model_name": {
-          "name": "model_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "critical_count": {
-          "name": "critical_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "high_count": {
-          "name": "high_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "medium_count": {
-          "name": "medium_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "low_count": {
-          "name": "low_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "informational_count": {
-          "name": "informational_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "total_count": {
-          "name": "total_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "review_report_request_id_review_request_id_fk": {
-          "name": "review_report_request_id_review_request_id_fk",
-          "tableFrom": "review_report",
-          "tableTo": "review_request",
-          "columnsFrom": ["request_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "review_report_donor_id_user_id_fk": {
-          "name": "review_report_donor_id_user_id_fk",
-          "tableFrom": "review_report",
-          "tableTo": "user",
-          "columnsFrom": ["donor_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.review_request": {
-      "name": "review_request",
+    "public.repository": {
+      "name": "repository",
       "schema": "",
       "columns": {
         "id": {
@@ -494,15 +376,41 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "status": {
+          "name": "status",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'pending'"
         },
-        "security_notes": {
-          "name": "security_notes",
+        "verification_level": {
+          "name": "verification_level",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'unverified'"
+        },
+        "active_submission_id": {
+          "name": "active_submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_by_submission_id": {
+          "name": "verified_by_submission_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_by_user_id": {
+          "name": "verified_by_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "verified_at": {
+          "name": "verified_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
@@ -591,18 +499,42 @@
           "primaryKey": false,
           "notNull": false
         },
-        "requester_id": {
-          "name": "requester_id",
-          "type": "text",
+        "loc_total": {
+          "name": "loc_total",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
-        "status": {
-          "name": "status",
-          "type": "text",
+        "loc_files": {
+          "name": "loc_files",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_blank": {
+          "name": "loc_blank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_comment": {
+          "name": "loc_comment",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_by_language": {
+          "name": "loc_by_language",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": "'pending'"
+          "default": "'{}'::jsonb"
+        },
+        "cloc_output_raw": {
+          "name": "cloc_output_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -627,9 +559,301 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "review_request_requester_id_user_id_fk": {
-          "name": "review_request_requester_id_user_id_fk",
-          "tableFrom": "review_request",
+        "repository_verified_by_user_id_user_id_fk": {
+          "name": "repository_verified_by_user_id_user_id_fk",
+          "tableFrom": "repository",
+          "tableTo": "user",
+          "columnsFrom": ["verified_by_user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "repository_repo_url_unique": {
+          "name": "repository_repo_url_unique",
+          "nullsNotDistinct": false,
+          "columns": ["repo_url"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.review_report": {
+      "name": "review_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "donor_id": {
+          "name": "donor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "markdown": {
+          "name": "markdown",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "model_name": {
+          "name": "model_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "critical_count": {
+          "name": "critical_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "high_count": {
+          "name": "high_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "medium_count": {
+          "name": "medium_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "low_count": {
+          "name": "low_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "informational_count": {
+          "name": "informational_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "total_count": {
+          "name": "total_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "review_report_repository_idx": {
+          "name": "review_report_repository_idx",
+          "columns": [
+            {
+              "expression": "repository_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "review_report_repository_id_repository_id_fk": {
+          "name": "review_report_repository_id_repository_id_fk",
+          "tableFrom": "review_report",
+          "tableTo": "repository",
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "review_report_donor_id_user_id_fk": {
+          "name": "review_report_donor_id_user_id_fk",
+          "tableFrom": "review_report",
+          "tableTo": "user",
+          "columnsFrom": ["donor_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.review_request_submission": {
+      "name": "review_request_submission",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "repository_id": {
+          "name": "repository_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requester_id": {
+          "name": "requester_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "verification_level": {
+          "name": "verification_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'unverified'"
+        },
+        "requester_repo_permission": {
+          "name": "requester_repo_permission",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'unknown'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "security_notes": {
+          "name": "security_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_total": {
+          "name": "loc_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_files": {
+          "name": "loc_files",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_blank": {
+          "name": "loc_blank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_comment": {
+          "name": "loc_comment",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loc_by_language": {
+          "name": "loc_by_language",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "cloc_output_raw": {
+          "name": "cloc_output_raw",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "review_request_submission_repository_idx": {
+          "name": "review_request_submission_repository_idx",
+          "columns": [
+            {
+              "expression": "repository_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "review_request_submission_requester_idx": {
+          "name": "review_request_submission_requester_idx",
+          "columns": [
+            {
+              "expression": "requester_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "review_request_submission_repository_id_repository_id_fk": {
+          "name": "review_request_submission_repository_id_repository_id_fk",
+          "tableFrom": "review_request_submission",
+          "tableTo": "repository",
+          "columnsFrom": ["repository_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "review_request_submission_requester_id_user_id_fk": {
+          "name": "review_request_submission_requester_id_user_id_fk",
+          "tableFrom": "review_request_submission",
           "tableTo": "user",
           "columnsFrom": ["requester_id"],
           "columnsTo": ["id"],
@@ -638,13 +862,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "review_request_repo_url_unique": {
-          "name": "review_request_repo_url_unique",
-          "nullsNotDistinct": false,
-          "columns": ["repo_url"]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

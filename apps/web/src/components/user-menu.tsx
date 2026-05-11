@@ -1,4 +1,4 @@
-import { Button } from "@deepsec-me/ui/components/button";
+import { Button } from "@opensec/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@deepsec-me/ui/components/dropdown-menu";
-import { Skeleton } from "@deepsec-me/ui/components/skeleton";
+} from "@opensec/ui/components/dropdown-menu";
+import { Skeleton } from "@opensec/ui/components/skeleton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 

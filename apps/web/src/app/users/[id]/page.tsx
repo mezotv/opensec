@@ -4,7 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@deepsec-me/ui/components/card";
+} from "@opensec/ui/components/card";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -13,6 +14,27 @@ import { getUserProfile } from "@/lib/reviews";
 type UserPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: UserPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getUserProfile(id);
+
+  if (!data) {
+    return {
+      title: "User Not Found",
+    };
+  }
+
+  return {
+    title: data.profile.name || "OpenSec User",
+    description: `${data.profile.name || "This user"} has donated ${data.donated.length} reviews and requested ${data.requested.length} reviews on OpenSec.`,
+    alternates: {
+      canonical: `/users/${id}`,
+    },
+  };
+}
 
 export default async function UserPage({ params }: UserPageProps) {
   const { id } = await params;
@@ -36,7 +58,7 @@ export default async function UserPage({ params }: UserPageProps) {
         <div className="grid gap-3 md:grid-cols-2">
           {data.donated.length ? (
             data.donated.map((review) => (
-              <Link key={review.requestId} href={`/reviews/${review.requestId}`}>
+              <Link key={review.repositoryId} href={`/repos/${review.repoSlug}`}>
                 <Card className="transition-colors hover:bg-muted/50">
                   <CardHeader>
                     <CardTitle>
@@ -62,7 +84,7 @@ export default async function UserPage({ params }: UserPageProps) {
         <div className="grid gap-3 md:grid-cols-2">
           {data.requested.length ? (
             data.requested.map((request) => (
-              <Link key={request.id} href={`/reviews/${request.id}`}>
+              <Link key={request.id} href={`/repos/${request.repoSlug}`}>
                 <Card className="transition-colors hover:bg-muted/50">
                   <CardHeader>
                     <CardTitle>

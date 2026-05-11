@@ -1,5 +1,5 @@
 {
-  "name": "@deepsec-me/auth",
+  "name": "@opensec/auth",
   "type": "module",
   "exports": {
     ".": {
@@ -11,14 +11,14 @@
   },
   "scripts": {},
   "dependencies": {
-    "@deepsec-me/db": "workspace:*",
-    "@deepsec-me/env": "workspace:*",
+    "@opensec/db": "workspace:*",
+    "@opensec/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@deepsec-me/config": "workspace:*",
+    "@opensec/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

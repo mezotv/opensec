@@ -6,17 +6,18 @@
   "tailwind": {
     "config": "",
     "css": "src/styles/globals.css",
-    "baseColor": "mauve",
+    "baseColor": "neutral",
     "cssVariables": true,
     "prefix": ""
   },
   "iconLibrary": "lucide",
+  "rtl": false,
   "aliases": {
-    "components": "@deepsec-me/ui/components",
-    "utils": "@deepsec-me/ui/lib/utils",
-    "hooks": "@deepsec-me/ui/hooks",
-    "lib": "@deepsec-me/ui/lib",
-    "ui": "@deepsec-me/ui/components"
+    "components": "@opensec/ui/components",
+    "utils": "@opensec/ui/lib/utils",
+    "hooks": "@opensec/ui/hooks",
+    "lib": "@opensec/ui/lib",
+    "ui": "@opensec/ui/components"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

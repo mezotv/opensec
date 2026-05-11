@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@deepsec-me/ui/components/button";
+import { Button } from "@opensec/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@deepsec-me/ui/components/dropdown-menu";
+} from "@opensec/ui/components/dropdown-menu";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";

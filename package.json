@@ -1,10 +1,15 @@
 {
-  "name": "deepsec-me",
+  "name": "opensec",
   "private": true,
   "workspaces": {
     "packages": [
       "apps/*",
-      "packages/*"
+      "packages/api",
+      "packages/auth",
+      "packages/config",
+      "packages/db",
+      "packages/env",
+      "packages/ui"
     ],
     "catalog": {
       "dotenv": "^17.2.2",
@@ -32,19 +37,19 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:web": "turbo -F web dev",
-    "db:push": "turbo -F @deepsec-me/db db:push",
-    "db:studio": "turbo -F @deepsec-me/db db:studio",
-    "db:generate": "turbo -F @deepsec-me/db db:generate",
-    "db:migrate": "turbo -F @deepsec-me/db db:migrate",
+    "db:push": "turbo -F @opensec/db db:push",
+    "db:studio": "turbo -F @opensec/db db:studio",
+    "db:generate": "turbo -F @opensec/db db:generate",
+    "db:migrate": "turbo -F @opensec/db db:migrate",
     "check": "oxlint && oxfmt --write"
   },
   "dependencies": {
-    "@deepsec-me/env": "workspace:*",
+    "@opensec/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@deepsec-me/config": "workspace:*",
+    "@opensec/config": "workspace:*",
     "@types/node": "^22.13.14",
     "oxfmt": "^0.46.0",
     "oxlint": "^1.61.0",

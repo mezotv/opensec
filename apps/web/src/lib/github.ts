@@ -1,4 +1,4 @@
-import { env } from "@deepsec-me/env/server";
+import { env } from "@opensec/env/server";
 
 export function parseGithubRepoUrl(value: string) {
   const url = new URL(value.trim());
@@ -18,11 +18,14 @@ export function parseGithubRepoUrl(value: string) {
   return {
     owner,
     repo: repoName,
+    slug: `${owner}-${repoName}`.toLowerCase(),
     repoUrl: `https://github.com/${owner}/${repoName}`,
   };
 }
 
 type GithubRepoResponse = {
+  private: boolean;
+  visibility?: string;
   description: string | null;
   stargazers_count: number;
   forks_count: number;
@@ -63,6 +66,8 @@ export async function fetchGithubRepoMetadata(owner: string, repo: string) {
     const data = (await response.json()) as GithubRepoResponse;
 
     return {
+      isPrivate: data.private,
+      visibility: data.visibility ?? (data.private ? "private" : "public"),
       ghDescription: data.description,
       ghStars: data.stargazers_count,
       ghForks: data.forks_count,
@@ -80,5 +85,71 @@ export async function fetchGithubRepoMetadata(owner: string, repo: string) {
     };
   } catch {
     return null;
+  }
+}
+
+type GithubPermissionResponse = GithubRepoResponse & {
+  permissions?: {
+    admin?: boolean;
+    maintain?: boolean;
+    push?: boolean;
+    triage?: boolean;
+    pull?: boolean;
+  };
+};
+
+export async function fetchGithubRepoPermission(
+  owner: string,
+  repo: string,
+  accessToken?: string | null,
+) {
+  if (!accessToken) {
+    return { permission: "unknown" as const, verificationLevel: "unverified" as const };
+  }
+
+  try {
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${accessToken}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return { permission: "unknown" as const, verificationLevel: "unverified" as const };
+    }
+
+    const data = (await response.json()) as GithubPermissionResponse;
+    const permissions = data.permissions;
+
+    if (!permissions) {
+      return { permission: "unknown" as const, verificationLevel: "unverified" as const };
+    }
+
+    if (permissions.admin) {
+      return { permission: "admin" as const, verificationLevel: "maintainer" as const };
+    }
+
+    if (permissions.maintain) {
+      return { permission: "maintain" as const, verificationLevel: "maintainer" as const };
+    }
+
+    if (permissions.push) {
+      return { permission: "write" as const, verificationLevel: "contributor" as const };
+    }
+
+    if (permissions.triage) {
+      return { permission: "triage" as const, verificationLevel: "contributor" as const };
+    }
+
+    if (permissions.pull) {
+      return { permission: "read" as const, verificationLevel: "unverified" as const };
+    }
+
+    return { permission: "none" as const, verificationLevel: "unverified" as const };
+  } catch {
+    return { permission: "unknown" as const, verificationLevel: "unverified" as const };
   }
 }

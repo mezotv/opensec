@@ -21,7 +21,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@deepsec-me/ui/*": ["../../packages/ui/src/*"]
+      "@opensec/ui/*": ["../../packages/ui/src/*"]
     }
   },
   "include": [

@@ -1,20 +1,31 @@
-import { buttonVariants } from "@deepsec-me/ui/components/button";
-import { Card, CardContent } from "@deepsec-me/ui/components/card";
+import { buttonVariants } from "@opensec/ui/components/button";
+import { Card, CardContent } from "@opensec/ui/components/card";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ReviewCard } from "@/components/review-card";
 import { getPendingReviews } from "@/lib/reviews";
 
-export default async function ReviewsPage() {
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Repository Queue",
+  description: "Browse public GitHub repositories waiting for donated AI security reviews.",
+  alternates: {
+    canonical: "/repos",
+  },
+};
+
+export default async function RepositoriesPage() {
   const reviews = await getPendingReviews();
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-10">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold">Pending reviews</h1>
+          <h1 className="text-3xl font-semibold">Repositories for reviewing</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Pick a repo, run DeepSec manually, and submit the Markdown report.
+            Pick a repo, run a security review manually, and submit the Markdown report.
           </p>
         </div>
         <Link className={buttonVariants()} href="/request">
@@ -26,10 +37,13 @@ export default async function ReviewsPage() {
           reviews.map((review) => (
             <ReviewCard
               key={review.id}
-              id={review.id}
+              repoSlug={review.repoSlug}
               repoOwner={review.repoOwner}
               repoName={review.repoName}
               description={review.description}
+              verificationLevel={review.verificationLevel}
+              locTotal={review.locTotal}
+              locFiles={review.locFiles}
               ghDescription={review.ghDescription}
               ghStars={review.ghStars}
               ghLanguage={review.ghLanguage}

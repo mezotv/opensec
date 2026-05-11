@@ -1,23 +1,57 @@
-import { auth } from "@deepsec-me/auth";
-import { buttonVariants } from "@deepsec-me/ui/components/button";
+import { auth } from "@opensec/auth";
+import { Badge } from "@opensec/ui/components/badge";
+import { buttonVariants } from "@opensec/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@deepsec-me/ui/components/card";
+} from "@opensec/ui/components/card";
 import { Star } from "lucide-react";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DonateReviewDialog } from "@/components/donate-review-dialog";
-import { getReviewDetail } from "@/lib/reviews";
+import { getReviewDetailBySlug } from "@/lib/reviews";
 
 type ReviewDetailPageProps = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: ReviewDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const detail = await getReviewDetailBySlug(slug);
+
+  if (!detail) {
+    return {
+      title: "Repository Not Found",
+    };
+  }
+
+  const repoName = `${detail.request.repoOwner}/${detail.request.repoName}`;
+
+  return {
+    title: `${repoName} Security Review`,
+    description:
+      detail.request.ghDescription ||
+      `OpenSec security review request for the public GitHub repository ${repoName}.`,
+    alternates: {
+      canonical: `/repos/${slug}`,
+    },
+    openGraph: {
+      title: `${repoName} Security Review`,
+      description:
+        detail.request.ghDescription ||
+        `OpenSec security review request for the public GitHub repository ${repoName}.`,
+      url: `/repos/${slug}`,
+    },
+  };
+}
 
 function SeverityGrid({
   report,
@@ -67,16 +101,40 @@ function formatDate(value: Date) {
   );
 }
 
+function verificationLabel(level: "unverified" | "contributor" | "maintainer") {
+  if (level === "maintainer") {
+    return "Verified maintainer";
+  }
+
+  if (level === "contributor") {
+    return "Verified contributor";
+  }
+
+  return "Unverified request";
+}
+
+function verificationClassName(level: "unverified" | "contributor" | "maintainer") {
+  if (level === "maintainer") {
+    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+  }
+
+  if (level === "contributor") {
+    return "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300";
+  }
+
+  return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+}
+
 export default async function ReviewDetailPage({ params }: ReviewDetailPageProps) {
-  const { id } = await params;
-  const detail = await getReviewDetail(id);
+  const { slug } = await params;
+  const detail = await getReviewDetailBySlug(slug);
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!detail) {
     notFound();
   }
 
-  const { request, report } = detail;
+  const { request, report, submissions } = detail;
   const canViewReport = Boolean(
     report && session?.user && [request.requesterId, report.donorId].includes(session.user.id),
   );
@@ -96,6 +154,12 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
             <h1 className="mt-2 text-3xl font-semibold">
               {request.repoOwner}/{request.repoName}
             </h1>
+            <Badge
+              variant="outline"
+              className={`mt-3 ${verificationClassName(request.verificationLevel)}`}
+            >
+              {verificationLabel(request.verificationLevel)}
+            </Badge>
             {request.ghDescription ? (
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 {request.ghDescription}
@@ -113,15 +177,15 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           {!report && session?.user ? (
-            <DonateReviewDialog requestId={request.id} repoUrl={request.repoUrl} />
+            <DonateReviewDialog repositoryId={request.id} repoUrl={request.repoUrl} />
           ) : null}
           {!report && !session?.user ? (
             <Link className={buttonVariants()} href="/login">
-              Sign in to donate a review
+              Sign in to submit a review
             </Link>
           ) : null}
-          <Link className={buttonVariants({ variant: "outline" })} href="/reviews">
-            Back to queue
+          <Link className={buttonVariants({ variant: "outline" })} href="/repos">
+            Back to repositories
           </Link>
         </div>
       </section>
@@ -176,10 +240,28 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
               </p>
               <p className="text-xs text-muted-foreground">Last push</p>
             </div>
+            <div className="border p-3">
+              <p className="truncate font-semibold">
+                {typeof request.locTotal === "number" ? formatCount(request.locTotal) : "-"}
+              </p>
+              <p className="text-xs text-muted-foreground">LOC</p>
+            </div>
+            <div className="border p-3">
+              <p className="truncate font-semibold">
+                {typeof request.locFiles === "number" ? formatCount(request.locFiles) : "-"}
+              </p>
+              <p className="text-xs text-muted-foreground">Files</p>
+            </div>
           </div>
           {request.ghArchived ? (
             <p className="border border-yellow-500/40 bg-yellow-500/10 p-3 text-sm">
               This repository is archived on GitHub.
+            </p>
+          ) : null}
+          {request.verificationLevel === "unverified" ? (
+            <p className="border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200">
+              This request was submitted by a user whose GitHub access to the repository could not
+              be verified.
             </p>
           ) : null}
           {request.ghTopics.length ? (
@@ -208,7 +290,7 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
       <Card>
         <CardHeader>
           <CardTitle>Request context</CardTitle>
-          <CardDescription>Requested by {request.requesterName}</CardDescription>
+          <CardDescription>Active request by {request.requesterName}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm leading-7">
           <p>{request.description}</p>
@@ -218,6 +300,45 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
               <p className="text-muted-foreground">{request.securityNotes}</p>
             </div>
           ) : null}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Request submissions</CardTitle>
+          <CardDescription>
+            Every submission is stored. The repository uses the highest verification level as the
+            active request.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {submissions.map((submission) => (
+            <div key={submission.id} className="border p-3 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-medium">{submission.requester.name}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className={verificationClassName(submission.verificationLevel)}
+                  >
+                    {verificationLabel(submission.verificationLevel)}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {submission.requesterRepoPermission}
+                  </span>
+                </div>
+              </div>
+              <p className="mt-2 text-muted-foreground">{submission.description}</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                {typeof submission.locTotal === "number" ? (
+                  <span>{formatCount(submission.locTotal)} LOC</span>
+                ) : null}
+                {typeof submission.locFiles === "number" ? (
+                  <span>{formatCount(submission.locFiles)} files</span>
+                ) : null}
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
 

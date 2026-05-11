@@ -13,8 +13,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@deepsec-me/ui/lib/utils",
-    "ui": "@deepsec-me/ui/components",
+    "utils": "@opensec/ui/lib/utils",
+    "ui": "@opensec/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

@@ -4,15 +4,19 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@deepsec-me/ui/components/card";
+} from "@opensec/ui/components/card";
+import { Badge } from "@opensec/ui/components/badge";
 import { Star } from "lucide-react";
 import Link from "next/link";
 
 type ReviewCardProps = {
-  id: string;
+  repoSlug: string;
   repoOwner: string;
   repoName: string;
   description?: string | null;
+  verificationLevel?: "unverified" | "contributor" | "maintainer";
+  locTotal?: number | null;
+  locFiles?: number | null;
   ghDescription?: string | null;
   ghStars?: number | null;
   ghLanguage?: string | null;
@@ -29,11 +33,38 @@ function formatCount(value: number) {
     .toLowerCase();
 }
 
+function verificationLabel(level?: "unverified" | "contributor" | "maintainer") {
+  if (level === "maintainer") {
+    return "Verified maintainer";
+  }
+
+  if (level === "contributor") {
+    return "Verified contributor";
+  }
+
+  return "Unverified request";
+}
+
+function verificationClassName(level?: "unverified" | "contributor" | "maintainer") {
+  if (level === "maintainer") {
+    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+  }
+
+  if (level === "contributor") {
+    return "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300";
+  }
+
+  return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+}
+
 export function ReviewCard({
-  id,
+  repoSlug,
   repoOwner,
   repoName,
   description,
+  verificationLevel,
+  locTotal,
+  locFiles,
   ghDescription,
   ghStars,
   ghLanguage,
@@ -43,7 +74,7 @@ export function ReviewCard({
   const summary = ghDescription || description;
 
   return (
-    <Link href={`/reviews/${id}`}>
+    <Link href={`/repos/${repoSlug}`}>
       <Card className="h-full transition-colors hover:bg-muted/50">
         <CardHeader>
           <div className="flex items-start justify-between gap-3">
@@ -67,10 +98,17 @@ export function ReviewCard({
             ) : null}
           </div>
         </CardHeader>
-        {summary || typeof ghStars === "number" || ghLanguage ? (
+        {summary || typeof ghStars === "number" || ghLanguage || typeof locTotal === "number" ? (
           <CardContent className="space-y-3 text-muted-foreground">
             {summary ? <p>{summary}</p> : null}
-            {ghLanguage ? <div className="text-xs">{ghLanguage}</div> : null}
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <Badge variant="outline" className={verificationClassName(verificationLevel)}>
+                {verificationLabel(verificationLevel)}
+              </Badge>
+              {ghLanguage ? <span>{ghLanguage}</span> : null}
+              {typeof locTotal === "number" ? <span>{formatCount(locTotal)} LOC</span> : null}
+              {typeof locFiles === "number" ? <span>{formatCount(locFiles)} files</span> : null}
+            </div>
           </CardContent>
         ) : null}
       </Card>

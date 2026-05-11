@@ -9,22 +9,24 @@
     "start": "next start"
   },
   "dependencies": {
-    "@deepsec-me/api": "workspace:*",
-    "@deepsec-me/auth": "workspace:*",
-    "@deepsec-me/db": "workspace:*",
-    "@deepsec-me/env": "workspace:*",
-    "@deepsec-me/ui": "workspace:*",
+    "@opensec/api": "workspace:*",
+    "@opensec/auth": "workspace:*",
+    "@opensec/db": "workspace:*",
+    "@opensec/env": "workspace:*",
+    "@opensec/ui": "workspace:*",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "^1.13.14",
     "@orpc/zod": "catalog:",
     "@tanstack/react-form": "^1.28.0",
+    "@tanstack/react-hotkeys": "^0.10.0",
     "@tanstack/react-query": "^5.90.12",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.1",
+    "geist": "^1.7.0",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
@@ -34,7 +36,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@deepsec-me/config": "workspace:*",
+    "@opensec/config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-query-devtools": "^5.91.1",
     "@types/node": "^20",
@@ -45,7 +47,7 @@
     "typescript": "catalog:"
   },
   "portless": {
-    "name": "deepsec",
+    "name": "opensec",
     "script": "dev:app"
   }
 }

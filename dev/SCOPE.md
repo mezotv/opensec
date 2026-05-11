@@ -1,32 +1,32 @@
-# DeepSec.me MVP Scope
+# OpenSec MVP Scope
 
 ## Product Summary
 
-DeepSec.me is a lightweight coordination platform for donated AI security reviews of open source projects.
+OpenSec is a lightweight coordination platform for donated AI security reviews of open source projects.
 
-Maintainers and community members can request a DeepSec review for a public GitHub repository. Donors with available AI subscription capacity can run DeepSec manually, paste the generated Markdown report, and receive public credit for the donation.
+Maintainers and community members can request a security review for a public GitHub repository. Donors with available AI subscription capacity can run a review manually, paste the generated Markdown report, and receive public credit for the donation.
 
-The platform does not run DeepSec itself in the MVP. It coordinates requests, stores submitted reports privately, publishes safe metadata, and tracks donor contribution stats.
+The platform does not run security analysis itself in the MVP. It coordinates requests, stores submitted reports privately, publishes safe metadata, and tracks donor contribution stats.
 
 ## Problem
 
-DeepSec-style AI security analysis is valuable but expensive in tokens. Many open source maintainers cannot afford to run it, while some developers have unused capacity on high-tier Claude or Codex subscriptions.
+AI-assisted security analysis is valuable but expensive in tokens. Many open source maintainers cannot afford to run it, while some developers have unused capacity on high-tier Claude or Codex subscriptions.
 
-The current workaround is informal: maintainers ask friends with subscriptions to run the tool and send back a Markdown report. DeepSec.me turns that informal favor network into a simple public queue with attribution.
+The current workaround is informal: maintainers ask friends with subscriptions to run the tool and send back a Markdown report. OpenSec turns that informal favor network into a simple public queue with attribution.
 
 ## MVP Goal
 
 Ship a working app where:
 
 1. A GitHub-authenticated user requests a review for a public GitHub repository.
-2. Another GitHub-authenticated user submits a DeepSec Markdown report for that request.
+2. Another GitHub-authenticated user submits a Markdown report for that request.
 3. The full report remains private to the requester/maintainer-facing view.
 4. Public pages show safe review metadata, donor attribution, and aggregate severity counts.
 5. Donor profiles show contribution stats to encourage more donated reviews.
 
 ## Non-Goals
 
-- Running DeepSec inside the app.
+- Running security analysis inside the app.
 - Managing or verifying Claude/Codex subscriptions.
 - Payments, credits, or bounties.
 - Private repository support.
@@ -49,7 +49,7 @@ For MVP, the requester does not need to prove repository ownership. This keeps r
 
 ### Donor
 
-Any GitHub-authenticated user who runs DeepSec manually and submits the resulting Markdown report.
+Any GitHub-authenticated user who runs a security review manually and submits the resulting Markdown report.
 
 Donors do not need to claim a request before submitting. They can open any pending request and paste a completed report.
 
@@ -73,7 +73,7 @@ Unauthenticated users can see the landing page, pending requests, recent complet
 
 1. Donor signs in with GitHub.
 2. Donor browses pending review requests.
-3. Donor independently runs DeepSec locally or in their coding-agent environment.
+3. Donor independently runs a review locally or in their coding-agent environment.
 4. Donor opens the request detail page.
 5. Donor pastes the generated Markdown report.
 6. Donor selects the model/provider used.
@@ -99,7 +99,7 @@ For MVP, private report access is scoped to the user who created the request. Re
 
 ## Privacy Model
 
-Full DeepSec reports may contain sensitive vulnerability details. They must not be public by default.
+Full submitted reports may contain sensitive vulnerability details. They must not be public by default.
 
 Publicly visible data:
 
@@ -297,7 +297,7 @@ Use the existing repository stack:
 ### Milestone 3: Donor Submission Flow
 
 - Build pending review detail page.
-- Add donor instructions for running DeepSec manually.
+- Add donor instructions for running reviews manually.
 - Add Markdown report submission form.
 - Store private report and public severity metadata.
 - Mark request completed after submission.
@@ -324,7 +324,7 @@ The MVP is successful when a real user can:
 2. Request a review for a public repository.
 3. See that request appear in the public queue.
 4. Sign in as another user.
-5. Paste a DeepSec Markdown report for that request.
+5. Paste a Markdown report for that request.
 6. See public completion metadata without exposing the report body.
 7. See donor credit reflected on the donor profile.
 8. Let the requester view the private full report.
@@ -343,4 +343,4 @@ The MVP is successful when a real user can:
 - Donor reputation and badges.
 - Organization profiles.
 - Notifications by email or GitHub.
-- DeepSec run templates for Claude Code, Codex, and other agents.
+- OpenSec run templates for Claude Code, Codex, and other agents.

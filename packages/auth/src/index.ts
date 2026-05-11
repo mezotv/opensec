@@ -1,6 +1,6 @@
-import { createDb } from "@deepsec-me/db";
-import * as schema from "@deepsec-me/db/schema/auth";
-import { env } from "@deepsec-me/env/server";
+import { createDb } from "@opensec/db";
+import * as schema from "@opensec/db/schema/auth";
+import { env } from "@opensec/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -22,6 +22,7 @@ export function createAuth() {
       github: {
         clientId: env.GITHUB_CLIENT_ID,
         clientSecret: env.GITHUB_CLIENT_SECRET,
+        scopes: ["read:user", "user:email", "public_repo"],
       },
     },
     secret: env.BETTER_AUTH_SECRET,

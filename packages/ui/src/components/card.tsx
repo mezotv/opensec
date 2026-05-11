@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@deepsec-me/ui/lib/utils";
+import { cn } from "@opensec/ui/lib/utils";
 
 function Card({
   className,

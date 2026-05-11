@@ -5,20 +5,20 @@ import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { useIsMobile } from "@deepsec-me/ui/hooks/use-mobile";
-import { cn } from "@deepsec-me/ui/lib/utils";
-import { Button } from "@deepsec-me/ui/components/button";
-import { Input } from "@deepsec-me/ui/components/input";
-import { Separator } from "@deepsec-me/ui/components/separator";
+import { useIsMobile } from "@opensec/ui/hooks/use-mobile";
+import { cn } from "@opensec/ui/lib/utils";
+import { Button } from "@opensec/ui/components/button";
+import { Input } from "@opensec/ui/components/input";
+import { Separator } from "@opensec/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@deepsec-me/ui/components/sheet";
-import { Skeleton } from "@deepsec-me/ui/components/skeleton";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@deepsec-me/ui/components/tooltip";
+} from "@opensec/ui/components/sheet";
+import { Skeleton } from "@opensec/ui/components/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@opensec/ui/components/tooltip";
 import { PanelLeftIcon } from "lucide-react";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";

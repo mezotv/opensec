@@ -1,4 +1,4 @@
-import { auth } from "@deepsec-me/auth";
+import { auth } from "@opensec/auth";
 import type { NextRequest } from "next/server";
 
 export async function createContext(req: NextRequest) {

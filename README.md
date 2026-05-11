@@ -1,100 +1,45 @@
-# deepsec-me
+# OpenSec
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Self, ORPC, and more.
+OpenSec is an MVP for donated security reviews of public open source GitHub repositories.
 
-## Features
+Maintainers can request a private report for a public repository. Donors can use their own AI capacity or security tooling to run a review and submit a Markdown report. Public pages show repository metadata and safe summary counts; full report contents stay private to the requester and donor.
 
-- **TypeScript** - For type safety and improved developer experience
-- **Next.js** - Full-stack React framework
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Turborepo** - Optimized monorepo build system
-- **Oxlint** - Oxlint + Oxfmt (linting & formatting)
+## Stack
 
-## Getting Started
+- Next.js app in `apps/web`
+- Better Auth with GitHub OAuth only
+- PostgreSQL with Drizzle ORM
+- Shared UI primitives in `packages/ui`
+- Bun and Turborepo for workspace scripts
 
-First, install the dependencies:
+## Development
+
+Install dependencies:
 
 ```bash
 bun install
 ```
 
-## Database Setup
-
-This project uses PostgreSQL with Drizzle ORM.
-
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
-
-3. Apply the schema to your database:
+Create `apps/web/.env` with local values, then run migrations:
 
 ```bash
-bun run db:push
+bun run db:migrate
 ```
 
-Then, run the development server:
+Start the app:
 
 ```bash
-bun run dev
+bun run dev:web
 ```
 
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
+The local app is configured for Portless at `https://opensec.localhost`.
 
-## UI Customization
+## Scripts
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@deepsec-me/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Git Hooks and Formatting
-
-- Format and lint fix: `bun run check`
-
-## Project Structure
-
-```
-deepsec-me/
-├── apps/
-│   └── web/         # Fullstack application (Next.js)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
-- `bun run check-types`: Check TypeScript types across all apps
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
-- `bun run db:studio`: Open database studio UI
-- `bun run check`: Run Oxlint and Oxfmt
+- `bun run dev`: start workspace dev tasks
+- `bun run dev:web`: start only the web app
+- `bun run build`: build workspace packages
+- `bun run check`: run Oxlint and Oxfmt
+- `bun run db:generate`: generate Drizzle migrations
+- `bun run db:migrate`: run Drizzle migrations
+- `bun run db:studio`: open Drizzle Studio
