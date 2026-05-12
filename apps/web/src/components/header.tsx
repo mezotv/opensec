@@ -154,14 +154,14 @@ export default function Header({
                     {session.user.email || "GitHub account"}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {githubUsername ? (
-                    <>
-                      <DropdownMenuItem render={<Link href={`/users/${githubUsername}`} />}>
-                        My profile
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  ) : null}
+                  <DropdownMenuItem
+                    render={
+                      <Link href={githubUsername ? `/users/${githubUsername}` : "/users/me"} />
+                    }
+                  >
+                    My profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => {
