@@ -1,7 +1,5 @@
-import { auth } from "@opensec/auth";
 import type { Metadata } from "next";
 import { GeistPixelLine } from "geist/font/pixel";
-import { headers } from "next/headers";
 import { Geist, Geist_Mono, Silkscreen } from "next/font/google";
 
 import "../index.css";
@@ -82,8 +80,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth.api.getSession({ headers: await headers() });
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -91,7 +87,7 @@ export default async function RootLayout({
       >
         <Providers>
           <div className="flex min-h-screen flex-col overflow-x-clip bg-background">
-            <Header initialSession={session} />
+            <Header />
             <div aria-hidden="true" className="h-16 shrink-0" />
             {children}
           </div>

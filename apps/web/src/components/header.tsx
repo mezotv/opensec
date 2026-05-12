@@ -26,7 +26,11 @@ const navLinks = [
 
 type HeaderSession = Awaited<ReturnType<typeof authClient.getSession>>["data"];
 
-export default function Header({ initialSession }: { initialSession: HeaderSession }) {
+export default function Header({
+  initialSession = null,
+}: {
+  initialSession?: HeaderSession | null;
+}) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);

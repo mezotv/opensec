@@ -1,3 +1,4 @@
+- parse markdown
 - email on review finished
 - polish landing
 - parse the markdown

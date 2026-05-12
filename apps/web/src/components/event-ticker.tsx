@@ -1,81 +1,86 @@
-const eventSources = [
-  {
-    user: "mezotv",
-    action: "donated a review to",
-    repo: "getpaykit/paykit",
-    time: "5m ago",
-  },
-  {
-    user: "janburzinski",
-    action: "submitted findings for",
-    repo: "generalaction/emdash",
-    time: "42m ago",
-  },
-  {
-    user: "maxktz",
-    action: "donated a review to",
-    repo: "usenotra/notra",
-    time: "2h ago",
-  },
-  {
-    user: "bekacru",
-    action: "requested a review for",
-    repo: "better-auth/better-auth",
-    time: "4h ago",
-  },
-  {
-    user: "shadcn",
-    action: "donated a review to",
-    repo: "shadcn-ui/ui",
-    time: "6h ago",
-  },
-] as const;
+import { getCachedLandingData } from "@/lib/reviews";
 
-type GithubUser = {
-  avatar_url: string;
-  login: string;
-  name: string | null;
-};
-
-type GithubRepo = {
-  full_name: string;
-  owner: {
-    avatar_url: string;
-  };
-};
-
-async function fetchGitHub<T>(path: string): Promise<T | null> {
-  const response = await fetch(`https://api.github.com${path}`, {
-    headers: {
-      Accept: "application/vnd.github+json",
-    },
-    next: { revalidate: 60 * 60 },
-  });
-
-  if (!response.ok) {
+function toDate(value: Date | string | null | undefined) {
+  if (!value) {
     return null;
   }
 
-  return response.json() as Promise<T>;
+  return value instanceof Date ? value : new Date(value);
+}
+
+function formatRelativeTime(value: Date | null) {
+  if (!value) {
+    return "recently";
+  }
+
+  const diffMs = value.getTime() - Date.now();
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  if (Math.abs(diffMinutes) < 60) {
+    return rtf.format(diffMinutes, "minute");
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (Math.abs(diffHours) < 24) {
+    return rtf.format(diffHours, "hour");
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return rtf.format(diffDays, "day");
+}
+
+function Avatar({ image, label }: { image?: string | null; label: string }) {
+  if (image) {
+    return <img alt="" className="size-5 border border-border" src={image} />;
+  }
+
+  return (
+    <span className="flex size-5 items-center justify-center border border-border text-[10px] uppercase">
+      {label.slice(0, 1)}
+    </span>
+  );
 }
 
 export async function EventTicker() {
-  const events = await Promise.all(
-    eventSources.map(async (event) => {
-      const [user, repo] = await Promise.all([
-        fetchGitHub<GithubUser>(`/users/${event.user}`),
-        fetchGitHub<GithubRepo>(`/repos/${event.repo}`),
-      ]);
+  const { pending, completed } = await getCachedLandingData();
+
+  const events = [
+    ...completed.map((review) => {
+      const completedAt = toDate(review.completedAt);
 
       return {
-        ...event,
-        user: user?.name || user?.login || event.user,
-        userAvatar: user?.avatar_url || `https://github.com/${event.user}.png`,
-        repo: repo?.full_name || event.repo,
-        repoAvatar: repo?.owner.avatar_url || `https://github.com/${event.repo.split("/")[0]}.png`,
+        id: `completed-${review.id}`,
+        user: review.donorName || "Anonymous donor",
+        userAvatar: review.donorImage,
+        action: "donated a review to",
+        repo: `${review.repoOwner}/${review.repoName}`,
+        repoAvatar: review.ghOwnerAvatarUrl,
+        time: formatRelativeTime(completedAt),
+        createdAt: completedAt?.getTime() ?? 0,
       };
     }),
-  );
+    ...pending.map((review) => {
+      const createdAt = toDate(review.createdAt);
+
+      return {
+        id: `pending-${review.id}`,
+        user: review.requesterName || "Anonymous requester",
+        userAvatar: review.requesterImage,
+        action: "requested a review for",
+        repo: `${review.repoOwner}/${review.repoName}`,
+        repoAvatar: review.ghOwnerAvatarUrl,
+        time: formatRelativeTime(createdAt),
+        createdAt: createdAt?.getTime() ?? 0,
+      };
+    }),
+  ]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 8);
+
+  if (!events.length) {
+    return null;
+  }
 
   return (
     <section
@@ -85,15 +90,13 @@ export async function EventTicker() {
       <div className="opensec-event-ticker flex w-max gap-8 whitespace-nowrap">
         {[...events, ...events].map((event, index) => (
           <div
-            key={`${event.repo}-${index}`}
+            key={`${event.id}-${index}`}
             className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="size-5 border border-border" src={event.userAvatar} />
+            <Avatar image={event.userAvatar} label={event.user} />
             <span className="text-foreground">{event.user}</span>
             <span>{event.action}</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img alt="" className="size-5 border border-border" src={event.repoAvatar} />
+            <Avatar image={event.repoAvatar} label={event.repo} />
             <span className="text-foreground">{event.repo}</span>
             <span className="text-border">///</span>
             <span>{event.time}</span>

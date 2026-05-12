@@ -2,6 +2,7 @@ import { db } from "@opensec/db";
 import { repository, reviewReport, reviewRequestSubmission, user } from "@opensec/db/schema";
 import { count, desc, eq } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
+import { unstable_cache } from "next/cache";
 
 const activeSubmission = alias(reviewRequestSubmission, "active_submission");
 const requester = alias(user, "requester");
@@ -47,6 +48,7 @@ export async function getLandingData() {
       completedAt: repository.completedAt,
       donorId: reviewReport.donorId,
       donorName: donor.name,
+      donorImage: donor.image,
       provider: reviewReport.provider,
       criticalCount: reviewReport.criticalCount,
       highCount: reviewReport.highCount,
@@ -66,6 +68,10 @@ export async function getLandingData() {
 
   return { pending, completed, topDonors };
 }
+
+export const getCachedLandingData = unstable_cache(getLandingData, ["landing-data"], {
+  revalidate: 60 * 20,
+});
 
 export async function getTopDonors(limit?: number) {
   const query = db
