@@ -78,8 +78,7 @@ export async function createReviewRequest(formData: FormData): Promise<FormActio
 
   try {
     const repo = parseGithubRepoUrl(getRequiredString(formData, "repoUrl"));
-    const description = getRequiredString(formData, "description");
-    const securityNotes = getOptionalString(formData, "securityNotes");
+    const notes = getRequiredString(formData, "notes");
     const parsedCloc = parseClocOutput(getOptionalString(formData, "clocOutput"));
     const accessToken = await getGithubAccessToken(user.id);
     const [metadata, permission] = await Promise.all([
@@ -142,8 +141,7 @@ export async function createReviewRequest(formData: FormData): Promise<FormActio
         requesterId: user.id,
         verificationLevel: permission.verificationLevel,
         requesterRepoPermission: permission.permission,
-        description,
-        securityNotes,
+        notes,
         locTotal: parsedCloc.locTotal,
         locFiles: parsedCloc.locFiles,
         locBlank: parsedCloc.locBlank,

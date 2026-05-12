@@ -59,22 +59,13 @@ export function RequestReviewForm() {
         <Input id="repoUrl" name="repoUrl" placeholder="https://github.com/owner/repo" required />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="description">Project description</Label>
+        <Label htmlFor="notes">Note for reviewer</Label>
         <textarea
-          id="description"
-          name="description"
-          className="min-h-28 w-full border bg-transparent p-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          placeholder="What does this project do?"
+          id="notes"
+          name="notes"
+          className="min-h-40 w-full border bg-transparent p-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="Anything specific reviewer should know about or pass to the prompt?"
           required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="securityNotes">Security-sensitive areas</Label>
-        <textarea
-          id="securityNotes"
-          name="securityNotes"
-          className="min-h-28 w-full border bg-transparent p-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          placeholder="Auth, payments, webhooks, file uploads, secrets handling..."
         />
       </div>
       <Button type="submit" disabled={mutation.isPending}>

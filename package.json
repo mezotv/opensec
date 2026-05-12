@@ -36,12 +36,12 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
-    "dev:web": "turbo -F web dev",
-    "db:push": "turbo -F @opensec/db db:push",
-    "db:studio": "turbo -F @opensec/db db:studio",
-    "db:generate": "turbo -F @opensec/db db:generate",
-    "db:migrate": "turbo -F @opensec/db db:migrate",
-    "db:migrate:prod": "turbo -F @opensec/db db:migrate:prod",
+    "dev:web": "bun run --cwd apps/web dev",
+    "db:push": "bun run --cwd packages/db db:push",
+    "db:studio": "bun run --cwd packages/db db:studio",
+    "db:generate": "bun run --cwd packages/db db:generate",
+    "db:migrate": "bun run --cwd packages/db db:migrate",
+    "db:migrate:prod": "bun run --cwd packages/db db:migrate:prod",
     "check": "oxlint && oxfmt --write"
   },
   "dependencies": {

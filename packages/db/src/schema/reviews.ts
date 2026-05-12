@@ -98,8 +98,8 @@ export const reviewRequestSubmission = pgTable(
     })
       .default("unknown")
       .notNull(),
-    description: text("description").notNull(),
-    securityNotes: text("security_notes"),
+    /** markdown */
+    notes: text("notes").notNull(),
     locTotal: integer("loc_total"),
     locFiles: integer("loc_files"),
     locBlank: integer("loc_blank"),

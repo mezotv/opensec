@@ -40,7 +40,7 @@ export default async function RepositoriesPage() {
               repoSlug={review.repoSlug}
               repoOwner={review.repoOwner}
               repoName={review.repoName}
-              description={review.description}
+              notes={review.notes}
               verificationLevel={review.verificationLevel}
               locTotal={review.locTotal}
               locFiles={review.locFiles}

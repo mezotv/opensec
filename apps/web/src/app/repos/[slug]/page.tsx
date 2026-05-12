@@ -293,13 +293,7 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
           <CardDescription>Active request by {request.requesterName}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm leading-7">
-          <p>{request.description}</p>
-          {request.securityNotes ? (
-            <div>
-              <p className="font-medium">Security notes</p>
-              <p className="text-muted-foreground">{request.securityNotes}</p>
-            </div>
-          ) : null}
+          <p className="whitespace-pre-wrap">{request.notes}</p>
         </CardContent>
       </Card>
 
@@ -328,7 +322,7 @@ export default async function ReviewDetailPage({ params }: ReviewDetailPageProps
                   </span>
                 </div>
               </div>
-              <p className="mt-2 text-muted-foreground">{submission.description}</p>
+              <p className="mt-2 whitespace-pre-wrap text-muted-foreground">{submission.notes}</p>
               <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
                 {typeof submission.locTotal === "number" ? (
                   <span>{formatCount(submission.locTotal)} LOC</span>

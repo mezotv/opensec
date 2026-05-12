@@ -13,7 +13,7 @@ type ReviewCardProps = {
   repoSlug: string;
   repoOwner: string;
   repoName: string;
-  description?: string | null;
+  notes?: string | null;
   verificationLevel?: "unverified" | "contributor" | "maintainer";
   locTotal?: number | null;
   locFiles?: number | null;
@@ -61,7 +61,7 @@ export function ReviewCard({
   repoSlug,
   repoOwner,
   repoName,
-  description,
+  notes,
   verificationLevel,
   locTotal,
   locFiles,
@@ -71,7 +71,7 @@ export function ReviewCard({
   ghOwnerAvatarUrl,
   meta,
 }: ReviewCardProps) {
-  const summary = ghDescription || description;
+  const summary = ghDescription || notes;
 
   return (
     <Link href={`/repos/${repoSlug}`}>

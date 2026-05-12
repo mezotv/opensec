@@ -15,7 +15,7 @@ export async function getLandingData() {
       repoSlug: repository.repoSlug,
       repoOwner: repository.repoOwner,
       repoName: repository.repoName,
-      description: activeSubmission.description,
+      notes: activeSubmission.notes,
       verificationLevel: repository.verificationLevel,
       locTotal: repository.locTotal,
       locFiles: repository.locFiles,
@@ -97,8 +97,7 @@ export async function getPendingReviews() {
       repoUrl: repository.repoUrl,
       repoOwner: repository.repoOwner,
       repoName: repository.repoName,
-      description: activeSubmission.description,
-      securityNotes: activeSubmission.securityNotes,
+      notes: activeSubmission.notes,
       verificationLevel: repository.verificationLevel,
       locTotal: repository.locTotal,
       locFiles: repository.locFiles,
@@ -156,8 +155,7 @@ export async function getReviewDetail(id: string) {
   return {
     request: {
       ...repoRecord,
-      description: repoRecord.activeSubmission?.description ?? "",
-      securityNotes: repoRecord.activeSubmission?.securityNotes ?? null,
+      notes: repoRecord.activeSubmission?.notes ?? "",
       requesterId: repoRecord.activeSubmission?.requesterId ?? null,
       requesterName: repoRecord.activeSubmission?.requester.name ?? "Unknown requester",
     },
@@ -203,8 +201,7 @@ export async function getReviewDetailBySlug(slug: string) {
   return {
     request: {
       ...repoRecord,
-      description: repoRecord.activeSubmission?.description ?? "",
-      securityNotes: repoRecord.activeSubmission?.securityNotes ?? null,
+      notes: repoRecord.activeSubmission?.notes ?? "",
       requesterId: repoRecord.activeSubmission?.requesterId ?? null,
       requesterName: repoRecord.activeSubmission?.requester.name ?? "Unknown requester",
     },
