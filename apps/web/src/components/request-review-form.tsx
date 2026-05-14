@@ -56,12 +56,17 @@ export function RequestReviewForm() {
 
       <div className="space-y-2">
         <Label htmlFor="repoUrl">
-          GitHub repository URL
+          GitHub repository
           <span aria-hidden="true" className="text-destructive">
             *
           </span>
         </Label>
-        <Input id="repoUrl" name="repoUrl" placeholder="https://github.com/owner/repo" required />
+        <Input
+          id="repoUrl"
+          name="repoUrl"
+          placeholder="https://github.com/owner/repo or owner/repo"
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="notes">

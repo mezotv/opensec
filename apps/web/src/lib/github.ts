@@ -1,25 +1,64 @@
 import { env } from "@opensec/env/server";
 
+const OWNER_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+const REPO_PATTERN = /^[a-zA-Z0-9_.-]{1,100}$/;
+const INVALID_FORMAT_MESSAGE =
+  "Use a GitHub repository like https://github.com/owner/repo or owner/repo.";
+
 export function parseGithubRepoUrl(value: string) {
-  const url = new URL(value.trim());
+  const trimmed = value.trim();
 
-  if (url.hostname !== "github.com") {
-    throw new Error("Use a github.com repository URL.");
+  if (!trimmed) {
+    throw new Error(INVALID_FORMAT_MESSAGE);
   }
 
-  const [owner, repo] = url.pathname.replace(/^\/+/, "").split("/");
+  let path: string;
 
-  if (!owner || !repo) {
-    throw new Error("Use a full GitHub repository URL like https://github.com/owner/repo.");
+  if (/^https?:\/\//i.test(trimmed)) {
+    let url: URL;
+    try {
+      url = new URL(trimmed);
+    } catch {
+      throw new Error(INVALID_FORMAT_MESSAGE);
+    }
+
+    if (url.hostname.toLowerCase() !== "github.com") {
+      throw new Error("Use a github.com repository URL.");
+    }
+
+    path = url.pathname;
+  } else {
+    path = trimmed.replace(/^(?:www\.)?github\.com\//i, "");
   }
 
-  const repoName = repo.replace(/\.git$/, "");
+  const segments = path.replace(/^\/+/, "").replace(/\/+$/, "").split("/");
+
+  if (segments.length !== 2) {
+    throw new Error(INVALID_FORMAT_MESSAGE);
+  }
+
+  const [owner, rawRepo] = segments;
+  const repoName = rawRepo.replace(/\.git$/i, "");
+
+  if (
+    !owner ||
+    !repoName ||
+    repoName === "." ||
+    repoName === ".." ||
+    !OWNER_PATTERN.test(owner) ||
+    !REPO_PATTERN.test(repoName)
+  ) {
+    throw new Error(INVALID_FORMAT_MESSAGE);
+  }
+
+  const canonicalOwner = owner.toLowerCase();
+  const canonicalRepo = repoName.toLowerCase();
 
   return {
-    owner,
-    repo: repoName,
-    slug: `${owner}-${repoName}`.toLowerCase(),
-    repoUrl: `https://github.com/${owner}/${repoName}`,
+    owner: canonicalOwner,
+    repo: canonicalRepo,
+    slug: `${canonicalOwner}-${canonicalRepo}`,
+    repoUrl: `https://github.com/${canonicalOwner}/${canonicalRepo}`,
   };
 }
 
