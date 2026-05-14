@@ -85,7 +85,7 @@ export async function createReviewRequest(formData: FormData): Promise<FormActio
     if (!metadata) {
       return {
         ok: false,
-        error: "Repository not found. Submit a real public GitHub repository URL.",
+        error: "Repository not found. Submit a real public GitHub repository.",
       };
     }
 
