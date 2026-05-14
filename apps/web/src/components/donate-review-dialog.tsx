@@ -3,13 +3,13 @@
 import { submitReviewReport } from "@/app/actions";
 import { Button } from "@opensec/ui/components/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@opensec/ui/components/dialog";
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@opensec/ui/components/responsive-dialog";
 import { Input } from "@opensec/ui/components/input";
 import { Label } from "@opensec/ui/components/label";
 import { useMutation } from "@tanstack/react-query";
@@ -44,16 +44,16 @@ export function DonateReviewDialog({ repositoryId, repoUrl }: DonateReviewDialog
   });
 
   return (
-    <Dialog>
-      <DialogTrigger render={<Button size="lg" />}>Submit an audit</DialogTrigger>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Submit a review</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog>
+      <ResponsiveDialogTrigger render={<Button size="lg" />}>Submit an audit</ResponsiveDialogTrigger>
+      <ResponsiveDialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-3xl">
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Submit a review</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Run your preferred security review workflow, then paste the final Markdown report. The
             full report stays private. Severity totals are parsed automatically when possible.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <div className="border bg-muted/30 p-4 font-mono text-xs">Repository: {repoUrl}</div>
 
@@ -124,7 +124,7 @@ export function DonateReviewDialog({ repositoryId, repoUrl }: DonateReviewDialog
             {mutation.isPending ? "Submitting report..." : "Submit private report"}
           </Button>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }
